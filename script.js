@@ -1,14 +1,26 @@
 // Professional Portfolio JavaScript
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Smooth scrolling for navigation links
     setupSmoothScrolling();
+    
+    // Active navigation highlighting
     setupActiveNavigation();
+    
+    // Contact form handling
     setupContactForm();
+    
+    // Scroll animations
     setupScrollAnimations();
+    
+    // Navigation background on scroll
     setupNavbarScroll();
+    
+    // External links handling
+    handleExternalLinks();
 });
 
-// Smooth scrolling for navigation links
+// Smooth scrolling for navigation links (fixed for mobile)
 function setupSmoothScrolling() {
     const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
 
@@ -22,24 +34,33 @@ function setupSmoothScrolling() {
                 const targetSection = document.getElementById(targetId);
 
                 if (targetSection) {
-                    const navbarHeight = document.querySelector('.navbar').offsetHeight;
-                    const targetPosition = targetSection.offsetTop - navbarHeight + 1;
-
-                    window.scrollTo({
-                        top: targetPosition,
-                        behavior: 'smooth'
-                    });
-
-                    // Close mobile menu if open
+                    const navbar = document.querySelector('.navbar');
+                    const navbarToggler = document.querySelector('.navbar-toggler');
                     const navbarCollapse = document.querySelector('.navbar-collapse');
+
+                    // If mobile menu is open, close it first
                     if (navbarCollapse.classList.contains('show')) {
-                        const bsCollapse = new bootstrap.Collapse(navbarCollapse, { toggle: true });
-                        bsCollapse.hide();
+                        navbarToggler.click();
+
+                        // Wait for collapse animation to finish
+                        setTimeout(() => {
+                            scrollToSection(targetSection, navbar.offsetHeight);
+                        }, 300); // matches Bootstrap collapse transition
+                    } else {
+                        scrollToSection(targetSection, navbar.offsetHeight);
                     }
                 }
             }
         });
     });
+
+    function scrollToSection(section, navbarHeight) {
+        const targetPosition = section.offsetTop - navbarHeight;
+        window.scrollTo({
+            top: targetPosition,
+            behavior: 'smooth'
+        });
+    }
 }
 
 // Active navigation highlighting
@@ -48,7 +69,7 @@ function setupActiveNavigation() {
     const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
 
     function updateActiveNav() {
-        const scrollPos = window.scrollY + document.querySelector('.navbar').offsetHeight + 10;
+        const scrollPos = window.scrollY + 120; // offset for navbar
 
         sections.forEach(section => {
             const sectionTop = section.offsetTop;
@@ -56,9 +77,12 @@ function setupActiveNavigation() {
             const sectionId = section.getAttribute('id');
 
             if (scrollPos >= sectionTop && scrollPos < sectionTop + sectionHeight) {
-                navLinks.forEach(link => link.classList.remove('active'));
-                const activeLink = document.querySelector(`.navbar-nav .nav-link[href="#${sectionId}"]`);
-                if (activeLink) activeLink.classList.add('active');
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${sectionId}`) {
+                        link.classList.add('active');
+                    }
+                });
             }
         });
     }
@@ -71,38 +95,43 @@ function setupActiveNavigation() {
 function setupContactForm() {
     const contactForm = document.getElementById('contactForm');
 
-    if (!contactForm) return;
+    if (contactForm) {
+        contactForm.addEventListener('submit', function(e) {
+            e.preventDefault();
 
-    contactForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = {
-            name: document.getElementById('name').value,
-            email: document.getElementById('email').value,
-            subject: document.getElementById('subject').value,
-            message: document.getElementById('message').value
-        };
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                subject: document.getElementById('subject').value,
+                message: document.getElementById('message').value
+            };
 
-        if (!validateForm(formData)) return;
-        submitForm(formData);
-    });
+            if (!validateForm(formData)) return;
+
+            submitForm(formData);
+        });
+    }
 }
 
 // Form validation
 function validateForm(data) {
     const { name, email, subject, message } = data;
+
     if (!name.trim()) { showAlert('Please enter your name.', 'danger'); return false; }
     if (!email.trim() || !isValidEmail(email)) { showAlert('Please enter a valid email.', 'danger'); return false; }
     if (!subject.trim()) { showAlert('Please enter a subject.', 'danger'); return false; }
     if (!message.trim()) { showAlert('Please enter your message.', 'danger'); return false; }
+
     return true;
 }
 
 // Email validation
 function isValidEmail(email) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
 }
 
-// Submit form (simulation)
+// Submit form simulation
 function submitForm(formData) {
     const submitBtn = document.querySelector('#contactForm button[type="submit"]');
     const originalText = submitBtn.innerHTML;
@@ -113,7 +142,8 @@ function submitForm(formData) {
     setTimeout(() => {
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
-        showAlert('Thank you! I\'ll get back to you soon.', 'success');
+
+        showAlert('Thank you for your message! I\'ll get back to you soon.', 'success');
         document.getElementById('contactForm').reset();
         console.log('Form data:', formData);
     }, 2000);
@@ -126,24 +156,33 @@ function showAlert(message, type) {
 
     const alert = document.createElement('div');
     alert.className = `alert alert-${type} alert-dismissible fade show alert-message`;
-    alert.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+    alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
 
     const form = document.getElementById('contactForm');
-    if (form) form.parentNode.insertBefore(alert, form);
+    form.parentNode.insertBefore(alert, form);
 
-    setTimeout(() => { if (alert && alert.parentNode) alert.remove(); }, 5000);
+    setTimeout(() => { if (alert.parentNode) alert.remove(); }, 5000);
 }
 
 // Scroll animations
 function setupScrollAnimations() {
     const animatedElements = document.querySelectorAll('.skill-card, .project-card, .certification-card');
-    const observer = new IntersectionObserver((entries) => {
+
+    const observer = new IntersectionObserver(entries => {
         entries.forEach(entry => {
-            if (entry.isIntersecting) entry.target.classList.add('fade-in', 'visible');
+            if (entry.isIntersecting) {
+                entry.target.classList.add('fade-in', 'visible');
+            }
         });
     }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
 
-    animatedElements.forEach(el => { el.classList.add('fade-in'); observer.observe(el); });
+    animatedElements.forEach(element => {
+        element.classList.add('fade-in');
+        observer.observe(element);
+    });
 }
 
 // Navbar background on scroll
@@ -160,28 +199,29 @@ function setupNavbarScroll() {
         }
     }
 
-    window.addEventListener('scroll', throttle(updateNavbar, 50));
+    window.addEventListener('scroll', throttle(updateNavbar, 100));
     updateNavbar();
 }
 
-// Utility: Throttle function
-function throttle(func, limit) {
-    let lastFunc;
-    let lastRan;
-    return function() {
-        const context = this;
-        const args = arguments;
-        if (!lastRan) {
-            func.apply(context, args);
-            lastRan = Date.now();
-        } else {
-            clearTimeout(lastFunc);
-            lastFunc = setTimeout(function() {
-                if ((Date.now() - lastRan) >= limit) {
-                    func.apply(context, args);
-                    lastRan = Date.now();
-                }
-            }, limit - (Date.now() - lastRan));
+// External links
+function handleExternalLinks() {
+    const externalLinks = document.querySelectorAll('a[href^="http"], a[href^="https"]');
+    externalLinks.forEach(link => {
+        link.addEventListener('click', function() {
+            console.log('External link clicked:', this.href);
+        });
+    });
+}
+
+// Throttle utility
+function throttle(func, wait) {
+    let timeout;
+    return function(...args) {
+        if (!timeout) {
+            timeout = setTimeout(() => {
+                func(...args);
+                timeout = null;
+            }, wait);
         }
     };
 }
