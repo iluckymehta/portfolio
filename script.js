@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     handleExternalLinks();
 });
 
-// Smooth scrolling for navigation links (fixed for OnePlus/Android)
+// Smooth scrolling for navigation links (universal fix)
 function setupSmoothScrolling() {
     const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
 
@@ -23,15 +23,19 @@ function setupSmoothScrolling() {
                 const targetSection = document.getElementById(targetId);
 
                 if (targetSection) {
-                    const navbarHeight = document.querySelector('.navbar').offsetHeight;
-                    const targetPosition = window.scrollY + targetSection.getBoundingClientRect().top - navbarHeight;
+                    const navbar = document.querySelector('.navbar');
+                    const navbarHeight = navbar.offsetHeight;
+
+                    // Universal scroll calculation
+                    const elementPosition = targetSection.getBoundingClientRect().top + window.scrollY;
+                    const offsetPosition = elementPosition - navbarHeight - 10; // extra padding
 
                     window.scrollTo({
-                        top: targetPosition,
+                        top: offsetPosition,
                         behavior: 'smooth'
                     });
 
-                    // Close mobile menu if open with small delay
+                    // Close mobile menu if open
                     const navbarCollapse = document.querySelector('.navbar-collapse');
                     if (navbarCollapse.classList.contains('show')) {
                         const navbarToggler = document.querySelector('.navbar-toggler');
@@ -51,7 +55,7 @@ function setupActiveNavigation() {
     const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
 
     function updateActiveNav() {
-        const scrollPos = window.scrollY + 110; // slightly larger offset for mobile
+        const scrollPos = window.scrollY + document.querySelector('.navbar').offsetHeight + 20;
 
         sections.forEach(section => {
             const sectionTop = section.offsetTop;
@@ -59,94 +63,93 @@ function setupActiveNavigation() {
             const sectionId = section.getAttribute('id');
 
             if (scrollPos >= sectionTop && scrollPos < sectionTop + sectionHeight) {
-                navLinks.forEach(link => {
-                    link.classList.remove('active');
-                    if (link.getAttribute('href') === `#${sectionId}`) {
-                        link.classList.add('active');
-                    }
-                });
+                navLinks.forEach(link => link.classList.remove('active'));
+                const activeLink = document.querySelector(`.navbar-nav .nav-link[href="#${sectionId}"]`);
+                if (activeLink) activeLink.classList.add('active');
             }
         });
     }
 
-    window.addEventListener('scroll', throttle(updateActiveNav, 50));
+    window.addEventListener('scroll', updateActiveNav);
     updateActiveNav();
 }
 
 // Contact form handling
 function setupContactForm() {
     const contactForm = document.getElementById('contactForm');
-    if (!contactForm) return;
+    if (contactForm) {
+        contactForm.addEventListener('submit', function(e) {
+            e.preventDefault();
 
-    contactForm.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const formData = {
-            name: document.getElementById('name').value,
-            email: document.getElementById('email').value,
-            subject: document.getElementById('subject').value,
-            message: document.getElementById('message').value
-        };
-        if (!validateForm(formData)) return;
-        submitForm(formData);
-    });
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                subject: document.getElementById('subject').value,
+                message: document.getElementById('message').value
+            };
+
+            if (!validateForm(formData)) return;
+
+            submitForm(formData);
+        });
+    }
 }
 
 // Form validation
 function validateForm(data) {
     const { name, email, subject, message } = data;
     if (!name.trim()) { showAlert('Please enter your name.', 'danger'); return false; }
-    if (!email.trim() || !isValidEmail(email)) { showAlert('Please enter a valid email.', 'danger'); return false; }
+    if (!email.trim() || !isValidEmail(email)) { showAlert('Please enter a valid email address.', 'danger'); return false; }
     if (!subject.trim()) { showAlert('Please enter a subject.', 'danger'); return false; }
     if (!message.trim()) { showAlert('Please enter your message.', 'danger'); return false; }
     return true;
 }
 
 function isValidEmail(email) {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
 }
 
+// Simulate form submission
 function submitForm(formData) {
     const submitBtn = document.querySelector('#contactForm button[type="submit"]');
     const originalText = submitBtn.innerHTML;
+
     submitBtn.innerHTML = '<span class="loading"></span> Sending...';
     submitBtn.disabled = true;
 
     setTimeout(() => {
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
-        showAlert('Thank you! I\'ll get back to you soon.', 'success');
+        showAlert('Thank you for your message! I\'ll get back to you soon.', 'success');
         document.getElementById('contactForm').reset();
         console.log('Form data:', formData);
     }, 2000);
 }
 
+// Show alert messages
 function showAlert(message, type) {
     const existingAlert = document.querySelector('.alert-message');
     if (existingAlert) existingAlert.remove();
 
     const alert = document.createElement('div');
     alert.className = `alert alert-${type} alert-dismissible fade show alert-message`;
-    alert.innerHTML = `${message} <button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+    alert.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
 
     const form = document.getElementById('contactForm');
     form.parentNode.insertBefore(alert, form);
 
-    setTimeout(() => { if (alert && alert.parentNode) alert.remove(); }, 5000);
+    setTimeout(() => { if (alert.parentNode) alert.remove(); }, 5000);
 }
 
 // Scroll animations
 function setupScrollAnimations() {
     const animatedElements = document.querySelectorAll('.skill-card, .project-card, .certification-card');
     const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) entry.target.classList.add('fade-in', 'visible');
-        });
+        entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('fade-in', 'visible'); });
     }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
 
-    animatedElements.forEach(element => {
-        element.classList.add('fade-in');
-        observer.observe(element);
-    });
+    animatedElements.forEach(element => { element.classList.add('fade-in'); observer.observe(element); });
 }
 
 // Navbar background on scroll
@@ -161,24 +164,24 @@ function setupNavbarScroll() {
             navbar.style.backdropFilter = 'none';
         }
     }
-    window.addEventListener('scroll', throttle(updateNavbar, 50));
+    window.addEventListener('scroll', updateNavbar);
     updateNavbar();
 }
 
-// Handle external links
+// External links tracking
 function handleExternalLinks() {
-    const externalLinks = document.querySelectorAll('a[href^="http"]');
-    externalLinks.forEach(link => {
-        link.addEventListener('click', () => console.log('External link clicked:', link.href));
-    });
+    const externalLinks = document.querySelectorAll('a[href^="http"], a[href^="https"]');
+    externalLinks.forEach(link => { link.addEventListener('click', () => console.log('External link clicked:', link.href)); });
 }
 
-// Throttle function
+// Throttle scroll events
 function throttle(func, wait) {
     let timeout;
-    return function(...args) {
+    return function executedFunction(...args) {
         const later = () => { clearTimeout(timeout); func(...args); };
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
     };
 }
+
+window.addEventListener('scroll', throttle(() => {}, 16));
