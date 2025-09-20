@@ -290,9 +290,12 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Navigation background on scroll
     setupNavbarScroll();
+    
+    // External links handling
+    handleExternalLinks();
 });
 
-// Smooth scrolling for navigation links (works correctly on mobile)
+// Smooth scrolling for navigation links (fixed for mobile)
 function setupSmoothScrolling() {
     const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
 
@@ -307,25 +310,32 @@ function setupSmoothScrolling() {
 
                 if (targetSection) {
                     const navbar = document.querySelector('.navbar');
-                    const navbarHeight = navbar.offsetHeight;
-
-                    const targetPosition = targetSection.getBoundingClientRect().top + window.scrollY - navbarHeight;
-
-                    window.scrollTo({
-                        top: targetPosition,
-                        behavior: 'smooth'
-                    });
-
-                    // Close mobile menu if open
+                    const navbarToggler = document.querySelector('.navbar-toggler');
                     const navbarCollapse = document.querySelector('.navbar-collapse');
+
+                    // If mobile menu is open, close it first
                     if (navbarCollapse.classList.contains('show')) {
-                        const navbarToggler = document.querySelector('.navbar-toggler');
                         navbarToggler.click();
+
+                        // Wait for collapse animation to finish
+                        setTimeout(() => {
+                            scrollToSection(targetSection, navbar.offsetHeight);
+                        }, 300); // matches Bootstrap collapse transition
+                    } else {
+                        scrollToSection(targetSection, navbar.offsetHeight);
                     }
                 }
             }
         });
     });
+
+    function scrollToSection(section, navbarHeight) {
+        const targetPosition = section.offsetTop - navbarHeight;
+        window.scrollTo({
+            top: targetPosition,
+            behavior: 'smooth'
+        });
+    }
 }
 
 // Active navigation highlighting
@@ -334,7 +344,7 @@ function setupActiveNavigation() {
     const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
 
     function updateActiveNav() {
-        const scrollPos = window.scrollY + 110; // Slight offset for navbar
+        const scrollPos = window.scrollY + 120; // offset for navbar
 
         sections.forEach(section => {
             const sectionTop = section.offsetTop;
@@ -352,7 +362,7 @@ function setupActiveNavigation() {
         });
     }
 
-    window.addEventListener('scroll', updateActiveNav);
+    window.addEventListener('scroll', throttle(updateActiveNav, 100));
     updateActiveNav();
 }
 
@@ -396,7 +406,7 @@ function isValidEmail(email) {
     return emailRegex.test(email);
 }
 
-// Submit form (simulation)
+// Submit form simulation
 function submitForm(formData) {
     const submitBtn = document.querySelector('#contactForm button[type="submit"]');
     const originalText = submitBtn.innerHTML;
@@ -409,9 +419,7 @@ function submitForm(formData) {
         submitBtn.disabled = false;
 
         showAlert('Thank you for your message! I\'ll get back to you soon.', 'success');
-
         document.getElementById('contactForm').reset();
-
         console.log('Form data:', formData);
     }, 2000);
 }
@@ -431,14 +439,14 @@ function showAlert(message, type) {
     const form = document.getElementById('contactForm');
     form.parentNode.insertBefore(alert, form);
 
-    setTimeout(() => { if (alert && alert.parentNode) alert.remove(); }, 5000);
+    setTimeout(() => { if (alert.parentNode) alert.remove(); }, 5000);
 }
 
 // Scroll animations
 function setupScrollAnimations() {
     const animatedElements = document.querySelectorAll('.skill-card, .project-card, .certification-card');
 
-    const observer = new IntersectionObserver((entries) => {
+    const observer = new IntersectionObserver(entries => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add('fade-in', 'visible');
@@ -466,13 +474,8 @@ function setupNavbarScroll() {
         }
     }
 
-    window.addEventListener('scroll', updateNavbar);
+    window.addEventListener('scroll', throttle(updateNavbar, 100));
     updateNavbar();
-}
-
-// Download resume function
-function downloadResume() {
-    showAlert('Resume download would start here. Please add your actual resume file.', 'info');
 }
 
 // External links
@@ -484,15 +487,16 @@ function handleExternalLinks() {
         });
     });
 }
-document.addEventListener('DOMContentLoaded', handleExternalLinks);
 
-// Throttle scroll events
+// Throttle utility
 function throttle(func, wait) {
     let timeout;
     return function(...args) {
-        const later = () => { clearTimeout(timeout); func(...args); };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
+        if (!timeout) {
+            timeout = setTimeout(() => {
+                func(...args);
+                timeout = null;
+            }, wait);
+        }
     };
 }
-window.addEventListener('scroll', throttle(() => {}, 16));
