@@ -1,4 +1,6 @@
-/* Custom CSS for Professional Portfolio */
+/* =======================
+   Professional Portfolio CSS
+======================= */
 
 :root {
     --primary-color: #007bff;
@@ -24,16 +26,12 @@ body {
     scroll-behavior: smooth;
 }
 
-/* Fix for section scroll under fixed navbar */
-section {
-    scroll-margin-top: 100px; /* Adjust based on navbar height */
-}
-
 /* Navigation Styles */
 .navbar {
     padding: 1rem 0;
     box-shadow: var(--box-shadow);
     transition: all 0.3s ease;
+    z-index: 999;
 }
 
 .navbar-brand {
@@ -344,28 +342,32 @@ footer {
     .hero-title {
         font-size: 2.5rem;
     }
-    
+
     .hero-subtitle {
         font-size: 1.25rem;
     }
-    
+
     .section-title {
         font-size: 2rem;
     }
-    
+
     .profile-image {
         width: 250px;
         height: 250px;
     }
-    
+
     .certification-card {
         flex-direction: column;
         text-align: center;
     }
-    
+
     .certification-icon {
         margin-right: 0;
         margin-bottom: 1rem;
+    }
+
+    html {
+        scroll-behavior: smooth;
     }
 }
 
@@ -373,16 +375,16 @@ footer {
     .section-padding {
         padding: 60px 0;
     }
-    
+
     .hero-title {
         font-size: 2rem;
     }
-    
+
     .profile-image {
         width: 200px;
         height: 200px;
     }
-    
+
     .social-links .btn {
         display: block;
         width: 100%;
@@ -424,4 +426,9 @@ footer {
 
 @keyframes spin {
     to { transform: rotate(360deg); }
+}
+
+/* Section scroll-margin fix for smooth scroll offset */
+section {
+    scroll-margin-top: 80px; /* Height of navbar */
 }

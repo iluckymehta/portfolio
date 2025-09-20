@@ -273,7 +273,6 @@
 // }, 16)); // ~60fps
 
 
-
 // Professional Portfolio JavaScript
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -291,12 +290,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Navigation background on scroll
     setupNavbarScroll();
-    
-    // External link handling
-    handleExternalLinks();
 });
 
-// Smooth scrolling for navigation links with fixed navbar offset
+// Smooth scrolling for navigation links (works correctly on mobile)
 function setupSmoothScrolling() {
     const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
 
@@ -304,29 +300,28 @@ function setupSmoothScrolling() {
         link.addEventListener('click', function(e) {
             const href = this.getAttribute('href');
 
-            // Only handle internal anchor links
             if (href.startsWith('#')) {
                 e.preventDefault();
-                const targetSection = document.querySelector(href);
-                if (!targetSection) return;
+                const targetId = href.substring(1);
+                const targetSection = document.getElementById(targetId);
 
-                // Get current navbar height (dynamic)
-                const navbar = document.querySelector('.navbar');
-                const navbarHeight = navbar.offsetHeight;
+                if (targetSection) {
+                    const navbar = document.querySelector('.navbar');
+                    const navbarHeight = navbar.offsetHeight;
 
-                // Scroll position accounting for fixed navbar
-                const targetPosition = targetSection.getBoundingClientRect().top + window.scrollY - navbarHeight;
+                    const targetPosition = targetSection.getBoundingClientRect().top + window.scrollY - navbarHeight;
 
-                window.scrollTo({
-                    top: targetPosition,
-                    behavior: 'smooth'
-                });
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
 
-                // Close mobile menu if open
-                const navbarCollapse = document.querySelector('.navbar-collapse');
-                if (navbarCollapse.classList.contains('show')) {
-                    const navbarToggler = document.querySelector('.navbar-toggler');
-                    navbarToggler.click();
+                    // Close mobile menu if open
+                    const navbarCollapse = document.querySelector('.navbar-collapse');
+                    if (navbarCollapse.classList.contains('show')) {
+                        const navbarToggler = document.querySelector('.navbar-toggler');
+                        navbarToggler.click();
+                    }
                 }
             }
         });
@@ -339,7 +334,7 @@ function setupActiveNavigation() {
     const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
 
     function updateActiveNav() {
-        const scrollPos = window.scrollY + 110; // adjusted offset for navbar
+        const scrollPos = window.scrollY + 110; // Slight offset for navbar
 
         sections.forEach(section => {
             const sectionTop = section.offsetTop;
@@ -358,7 +353,7 @@ function setupActiveNavigation() {
     }
 
     window.addEventListener('scroll', updateActiveNav);
-    updateActiveNav(); // Initial call
+    updateActiveNav();
 }
 
 // Contact form handling
@@ -369,7 +364,6 @@ function setupContactForm() {
         contactForm.addEventListener('submit', function(e) {
             e.preventDefault();
 
-            // Get form data
             const formData = {
                 name: document.getElementById('name').value,
                 email: document.getElementById('email').value,
@@ -377,12 +371,8 @@ function setupContactForm() {
                 message: document.getElementById('message').value
             };
 
-            // Simple validation
-            if (!validateForm(formData)) {
-                return;
-            }
+            if (!validateForm(formData)) return;
 
-            // Simulate form submission
             submitForm(formData);
         });
     }
@@ -392,25 +382,10 @@ function setupContactForm() {
 function validateForm(data) {
     const { name, email, subject, message } = data;
 
-    if (!name.trim()) {
-        showAlert('Please enter your name.', 'danger');
-        return false;
-    }
-
-    if (!email.trim() || !isValidEmail(email)) {
-        showAlert('Please enter a valid email address.', 'danger');
-        return false;
-    }
-
-    if (!subject.trim()) {
-        showAlert('Please enter a subject.', 'danger');
-        return false;
-    }
-
-    if (!message.trim()) {
-        showAlert('Please enter your message.', 'danger');
-        return false;
-    }
+    if (!name.trim()) { showAlert('Please enter your name.', 'danger'); return false; }
+    if (!email.trim() || !isValidEmail(email)) { showAlert('Please enter a valid email.', 'danger'); return false; }
+    if (!subject.trim()) { showAlert('Please enter a subject.', 'danger'); return false; }
+    if (!message.trim()) { showAlert('Please enter your message.', 'danger'); return false; }
 
     return true;
 }
@@ -426,20 +401,15 @@ function submitForm(formData) {
     const submitBtn = document.querySelector('#contactForm button[type="submit"]');
     const originalText = submitBtn.innerHTML;
 
-    // Show loading state
     submitBtn.innerHTML = '<span class="loading"></span> Sending...';
     submitBtn.disabled = true;
 
-    // Simulate API call
     setTimeout(() => {
-        // Reset button
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
 
-        // Show success message
         showAlert('Thank you for your message! I\'ll get back to you soon.', 'success');
 
-        // Reset form
         document.getElementById('contactForm').reset();
 
         console.log('Form data:', formData);
@@ -448,13 +418,9 @@ function submitForm(formData) {
 
 // Show alert messages
 function showAlert(message, type) {
-    // Remove existing alerts
     const existingAlert = document.querySelector('.alert-message');
-    if (existingAlert) {
-        existingAlert.remove();
-    }
+    if (existingAlert) existingAlert.remove();
 
-    // Create alert element
     const alert = document.createElement('div');
     alert.className = `alert alert-${type} alert-dismissible fade show alert-message`;
     alert.innerHTML = `
@@ -462,16 +428,10 @@ function showAlert(message, type) {
         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
 
-    // Insert alert before the form
     const form = document.getElementById('contactForm');
     form.parentNode.insertBefore(alert, form);
 
-    // Auto remove after 5 seconds
-    setTimeout(() => {
-        if (alert && alert.parentNode) {
-            alert.remove();
-        }
-    }, 5000);
+    setTimeout(() => { if (alert && alert.parentNode) alert.remove(); }, 5000);
 }
 
 // Scroll animations
@@ -484,10 +444,7 @@ function setupScrollAnimations() {
                 entry.target.classList.add('fade-in', 'visible');
             }
         });
-    }, {
-        threshold: 0.1,
-        rootMargin: '0px 0px -50px 0px'
-    });
+    }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
 
     animatedElements.forEach(element => {
         element.classList.add('fade-in');
@@ -510,7 +467,7 @@ function setupNavbarScroll() {
     }
 
     window.addEventListener('scroll', updateNavbar);
-    updateNavbar(); // Initial call
+    updateNavbar();
 }
 
 // Download resume function
@@ -518,31 +475,24 @@ function downloadResume() {
     showAlert('Resume download would start here. Please add your actual resume file.', 'info');
 }
 
-// Utility function to handle external links
+// External links
 function handleExternalLinks() {
     const externalLinks = document.querySelectorAll('a[href^="http"], a[href^="https"]');
-
     externalLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
+        link.addEventListener('click', function() {
             console.log('External link clicked:', this.href);
         });
     });
 }
+document.addEventListener('DOMContentLoaded', handleExternalLinks);
 
-// Performance optimization: Throttle scroll events
+// Throttle scroll events
 function throttle(func, wait) {
     let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
+    return function(...args) {
+        const later = () => { clearTimeout(timeout); func(...args); };
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
     };
 }
-
-// Apply throttling to scroll-based functions
-window.addEventListener('scroll', throttle(() => {
-    // Additional scroll-based functionality can be added here
-}, 16)); // ~60fps
+window.addEventListener('scroll', throttle(() => {}, 16));
