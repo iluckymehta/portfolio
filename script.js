@@ -1,20 +1,31 @@
 // Professional Portfolio JavaScript
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
+    // Smooth scrolling for navigation links (mobile fix included)
     setupSmoothScrolling();
+
+    // Active navigation highlighting
     setupActiveNavigation();
+
+    // Contact form handling
     setupContactForm();
+
+    // Scroll animations
     setupScrollAnimations();
+
+    // Navigation background on scroll
     setupNavbarScroll();
+
+    // External links tracking
     handleExternalLinks();
 });
 
-// Smooth scrolling for navigation links (universal fix)
+// Smooth scrolling for navigation links (Mobile & Desktop)
 function setupSmoothScrolling() {
     const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
 
     navLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
+        link.addEventListener('click', function (e) {
             const href = this.getAttribute('href');
 
             if (href.startsWith('#')) {
@@ -22,28 +33,28 @@ function setupSmoothScrolling() {
                 const targetId = href.substring(1);
                 const targetSection = document.getElementById(targetId);
 
-                if (targetSection) {
-                    const navbar = document.querySelector('.navbar');
-                    const navbarHeight = navbar.offsetHeight;
+                if (!targetSection) return;
 
-                    // Universal scroll calculation
+                const navbar = document.querySelector('.navbar');
+                const navbarCollapse = document.querySelector('.navbar-collapse');
+                const navbarToggler = document.querySelector('.navbar-toggler');
+
+                // Close mobile menu if open
+                if (navbarCollapse.classList.contains('show') && navbarToggler) {
+                    navbarToggler.click();
+                }
+
+                // Scroll after collapse animation (Bootstrap ~350ms)
+                setTimeout(() => {
+                    const navbarHeight = navbar.offsetHeight;
                     const elementPosition = targetSection.getBoundingClientRect().top + window.scrollY;
-                    const offsetPosition = elementPosition - navbarHeight - 10; // extra padding
+                    const offsetPosition = elementPosition - navbarHeight - 5;
 
                     window.scrollTo({
                         top: offsetPosition,
                         behavior: 'smooth'
                     });
-
-                    // Close mobile menu if open
-                    const navbarCollapse = document.querySelector('.navbar-collapse');
-                    if (navbarCollapse.classList.contains('show')) {
-                        const navbarToggler = document.querySelector('.navbar-toggler');
-                        setTimeout(() => {
-                            navbarToggler.click();
-                        }, 100);
-                    }
-                }
+                }, 350);
             }
         });
     });
@@ -55,7 +66,7 @@ function setupActiveNavigation() {
     const navLinks = document.querySelectorAll('.navbar-nav .nav-link');
 
     function updateActiveNav() {
-        const scrollPos = window.scrollY + document.querySelector('.navbar').offsetHeight + 20;
+        const scrollPos = window.scrollY + 110; // extra offset for mobile
 
         sections.forEach(section => {
             const sectionTop = section.offsetTop;
@@ -63,22 +74,26 @@ function setupActiveNavigation() {
             const sectionId = section.getAttribute('id');
 
             if (scrollPos >= sectionTop && scrollPos < sectionTop + sectionHeight) {
-                navLinks.forEach(link => link.classList.remove('active'));
-                const activeLink = document.querySelector(`.navbar-nav .nav-link[href="#${sectionId}"]`);
-                if (activeLink) activeLink.classList.add('active');
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
+                    if (link.getAttribute('href') === `#${sectionId}`) {
+                        link.classList.add('active');
+                    }
+                });
             }
         });
     }
 
-    window.addEventListener('scroll', updateActiveNav);
-    updateActiveNav();
+    window.addEventListener('scroll', throttle(updateActiveNav, 50));
+    updateActiveNav(); // Initial call
 }
 
 // Contact form handling
 function setupContactForm() {
     const contactForm = document.getElementById('contactForm');
+
     if (contactForm) {
-        contactForm.addEventListener('submit', function(e) {
+        contactForm.addEventListener('submit', function (e) {
             e.preventDefault();
 
             const formData = {
@@ -98,19 +113,22 @@ function setupContactForm() {
 // Form validation
 function validateForm(data) {
     const { name, email, subject, message } = data;
+
     if (!name.trim()) { showAlert('Please enter your name.', 'danger'); return false; }
     if (!email.trim() || !isValidEmail(email)) { showAlert('Please enter a valid email address.', 'danger'); return false; }
     if (!subject.trim()) { showAlert('Please enter a subject.', 'danger'); return false; }
     if (!message.trim()) { showAlert('Please enter your message.', 'danger'); return false; }
+
     return true;
 }
 
+// Email validation
 function isValidEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
 }
 
-// Simulate form submission
+// Simulated form submission
 function submitForm(formData) {
     const submitBtn = document.querySelector('#contactForm button[type="submit"]');
     const originalText = submitBtn.innerHTML;
@@ -134,27 +152,39 @@ function showAlert(message, type) {
 
     const alert = document.createElement('div');
     alert.className = `alert alert-${type} alert-dismissible fade show alert-message`;
-    alert.innerHTML = `${message}<button type="button" class="btn-close" data-bs-dismiss="alert"></button>`;
+    alert.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
 
     const form = document.getElementById('contactForm');
     form.parentNode.insertBefore(alert, form);
 
-    setTimeout(() => { if (alert.parentNode) alert.remove(); }, 5000);
+    setTimeout(() => { if (alert && alert.parentNode) alert.remove(); }, 5000);
 }
 
 // Scroll animations
 function setupScrollAnimations() {
     const animatedElements = document.querySelectorAll('.skill-card, .project-card, .certification-card');
+
     const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('fade-in', 'visible'); });
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('fade-in', 'visible');
+            }
+        });
     }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
 
-    animatedElements.forEach(element => { element.classList.add('fade-in'); observer.observe(element); });
+    animatedElements.forEach(element => {
+        element.classList.add('fade-in');
+        observer.observe(element);
+    });
 }
 
 // Navbar background on scroll
 function setupNavbarScroll() {
     const navbar = document.querySelector('.navbar');
+
     function updateNavbar() {
         if (window.scrollY > 50) {
             navbar.style.backgroundColor = 'rgba(33, 37, 41, 0.95)';
@@ -164,24 +194,32 @@ function setupNavbarScroll() {
             navbar.style.backdropFilter = 'none';
         }
     }
-    window.addEventListener('scroll', updateNavbar);
+
+    window.addEventListener('scroll', throttle(updateNavbar, 50));
     updateNavbar();
+}
+
+// Download resume (optional)
+function downloadResume() {
+    showAlert('Resume download would start here. Please add your actual resume file.', 'info');
 }
 
 // External links tracking
 function handleExternalLinks() {
     const externalLinks = document.querySelectorAll('a[href^="http"], a[href^="https"]');
-    externalLinks.forEach(link => { link.addEventListener('click', () => console.log('External link clicked:', link.href)); });
+    externalLinks.forEach(link => {
+        link.addEventListener('click', function () {
+            console.log('External link clicked:', this.href);
+        });
+    });
 }
 
-// Throttle scroll events
+// Throttle utility
 function throttle(func, wait) {
     let timeout;
-    return function executedFunction(...args) {
+    return function (...args) {
         const later = () => { clearTimeout(timeout); func(...args); };
         clearTimeout(timeout);
         timeout = setTimeout(later, wait);
     };
 }
-
-window.addEventListener('scroll', throttle(() => {}, 16));
