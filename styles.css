@@ -1,6 +1,4 @@
-/* ===========================
-   Professional Portfolio CSS
-   =========================== */
+/* Custom CSS for Professional Portfolio */
 
 :root {
     --primary-color: #007bff;
@@ -24,11 +22,6 @@ body {
     line-height: 1.6;
     color: var(--dark-color);
     scroll-behavior: smooth;
-}
-
-/* Smooth scroll offset for fixed navbar */
-html {
-    scroll-padding-top: 80px; /* Adjust to navbar height */
 }
 
 /* Navigation Styles */
@@ -123,6 +116,19 @@ html {
     padding: 80px 0;
 }
 
+.section-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: var(--dark-color);
+}
+
+.section-subtitle {
+    font-size: 1.1rem;
+    color: var(--secondary-color);
+    margin-bottom: 3rem;
+}
+
 /* Skills Section */
 .skill-card {
     background: var(--white);
@@ -170,6 +176,22 @@ html {
 .project-card:hover {
     transform: translateY(-5px);
     box-shadow: var(--box-shadow-lg);
+}
+
+.project-image {
+    position: relative;
+    overflow: hidden;
+}
+
+.project-image img {
+    width: 100%;
+    height: 250px;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.project-card:hover .project-image img {
+    transform: scale(1.05);
 }
 
 .project-content {
@@ -235,6 +257,33 @@ html {
 }
 
 /* Contact Section */
+.contact-form-container {
+    background: var(--white);
+    padding: 2.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    margin-bottom: 2rem;
+}
+
+.form-label {
+    font-weight: 500;
+    color: var(--dark-color);
+    margin-bottom: 0.5rem;
+}
+
+.form-control {
+    border: 2px solid #e9ecef;
+    border-radius: var(--border-radius);
+    padding: 0.75rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
 .contact-info {
     padding: 2rem;
 }
@@ -285,6 +334,23 @@ footer {
     transform: translateY(-2px);
 }
 
+/* Responsive Design */
+@media (max-width: 768px) {
+    .hero-title { font-size: 2.5rem; }
+    .hero-subtitle { font-size: 1.25rem; }
+    .section-title { font-size: 2rem; }
+    .profile-image { width: 250px; height: 250px; }
+    .certification-card { flex-direction: column; text-align: center; }
+    .certification-icon { margin-right: 0; margin-bottom: 1rem; }
+}
+
+@media (max-width: 576px) {
+    .section-padding { padding: 60px 0; }
+    .hero-title { font-size: 2rem; }
+    .profile-image { width: 200px; height: 200px; }
+    .social-links .btn { display: block; width: 100%; margin-right: 0; }
+}
+
 /* Smooth Scrolling and Animations */
 .fade-in {
     opacity: 0;
@@ -319,68 +385,4 @@ footer {
 
 @keyframes spin {
     to { transform: rotate(360deg); }
-}
-
-/* Responsive Design */
-@media (max-width: 991px) {
-    .navbar-nav .nav-link {
-        padding: 0.5rem 1rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .hero-title {
-        font-size: 2.5rem;
-    }
-    
-    .hero-subtitle {
-        font-size: 1.25rem;
-    }
-    
-    .section-title {
-        font-size: 2rem;
-    }
-    
-    .profile-image {
-        width: 250px;
-        height: 250px;
-    }
-    
-    .certification-card {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .certification-icon {
-        margin-right: 0;
-        margin-bottom: 1rem;
-    }
-    
-    /* Add top padding to sections to avoid overlap */
-    .section-padding {
-        padding-top: 100px;
-        padding-bottom: 60px;
-    }
-}
-
-@media (max-width: 576px) {
-    .section-padding {
-        padding: 60px 0;
-    }
-    
-    .hero-title {
-        font-size: 2rem;
-    }
-    
-    .profile-image {
-        width: 200px;
-        height: 200px;
-    }
-    
-    .social-links .btn {
-        display: block;
-        width: 100%;
-        margin-right: 0;
-        margin-bottom: 1rem;
-    }
 }
